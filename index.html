@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+            display: block;
+            margin: auto;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const box = 25;  // Increased box size
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let direction = "RIGHT";
+        let food = {
+            x: Math.floor(Math.random() * (canvas.width / box)) * box,
+            y: Math.floor(Math.random() * (canvas.height / box)) * box
+        };
+
+        document.addEventListener("keydown", changeDirection);
+        function changeDirection(event) {
+            if (event.keyCode == 37 && direction != "RIGHT") direction = "LEFT";
+            else if (event.keyCode == 38 && direction != "DOWN") direction = "UP";
+            else if (event.keyCode == 39 && direction != "LEFT") direction = "RIGHT";
+            else if (event.keyCode == 40 && direction != "UP") direction = "DOWN";
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw food
+            ctx.fillStyle = "red";
+            ctx.beginPath();
+            ctx.arc(food.x + box / 2, food.y + box / 2, box / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "darkred";
+            ctx.stroke();
+
+            // Draw snake
+            snake.forEach((segment) => {
+                let gradient = ctx.createLinearGradient(segment.x, segment.y, segment.x + box, segment.y + box);
+                gradient.addColorStop(0, "darkgreen");
+                gradient.addColorStop(1, "lightgreen");
+                ctx.fillStyle = gradient;
+                ctx.fillRect(segment.x, segment.y, box, box);
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(segment.x, segment.y, box, box);
+            });
+            
+            let headX = snake[0].x;
+            let headY = snake[0].y;
+
+            if (direction == "LEFT") headX -= box;
+            if (direction == "UP") headY -= box;
+            if (direction == "RIGHT") headX += box;
+            if (direction == "DOWN") headY += box;
+
+            if (headX == food.x && headY == food.y) {
+                food = {
+                    x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                    y: Math.floor(Math.random() * (canvas.height / box)) * box
+                };
+            } else {
+                snake.pop();
+            }
+
+            let newHead = { x: headX, y: headY };
+            if (headX < 0 || headY < 0 || headX >= canvas.width || headY >= canvas.height || snake.some(segment => segment.x === headX && segment.y === headY)) {
+                clearInterval(game);
+                alert("Game Over!");
+                return;
+            }
+            
+            snake.unshift(newHead);
+        }
+
+        let game = setInterval(draw, 150); // Slowed down the game
+    </script>
+</body>
+</html>
